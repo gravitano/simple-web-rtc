@@ -140,6 +140,144 @@ The server will start on `ws://localhost:3001`
 - **Node.js**: Backend runtime
 - **ws**: WebSocket library for Node.js
 
+## Deployment
+
+> 📘 **Untuk panduan deployment lengkap dalam Bahasa Indonesia, lihat [DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+### ⚠️ Important: Vercel Limitations
+
+**Vercel does NOT support WebSocket servers** due to its serverless architecture. The backend WebSocket server cannot run on Vercel as it requires persistent connections.
+
+### Recommended Deployment Strategy
+
+Deploy the **frontend** and **backend** separately:
+
+#### Option 1: Vercel (Frontend) + Railway/Render (Backend)
+
+**Frontend on Vercel:**
+
+1. Create `vercel.json` in the root:
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/frontend/index.html" }
+  ]
+}
+```
+
+2. Update `frontend/index.html` to use production WebSocket URL:
+```javascript
+const ws = new WebSocket('wss://your-backend.railway.app');
+```
+
+3. Deploy to Vercel:
+```bash
+vercel --prod
+```
+
+**Backend on Railway:**
+
+1. Create a Railway account at [railway.app](https://railway.app)
+2. Click "New Project" → "Deploy from GitHub repo"
+3. Select your repository
+4. Set root directory to `backend`
+5. Railway will auto-detect Node.js and deploy
+6. Add environment variable `PORT` with Railway's provided port
+7. Update `server.js` to use environment port:
+```javascript
+const port = process.env.PORT || 3001;
+const wss = new WebSocketServer({ port });
+```
+
+**Backend on Render:**
+
+1. Create a Render account at [render.com](https://render.com)
+2. Click "New +" → "Web Service"
+3. Connect your repository
+4. Configure:
+   - **Root Directory**: `backend`
+   - **Build Command**: `pnpm install`
+   - **Start Command**: `node server.js`
+5. Deploy and note your WebSocket URL
+
+#### Option 2: Fully on Railway/Render
+
+Deploy both frontend and backend on the same platform:
+
+**Railway:**
+- Create two services in one project
+- Frontend: Static site serving `frontend/index.html`
+- Backend: Node.js service for WebSocket server
+
+**Render:**
+- Deploy backend as a Web Service
+- Deploy frontend as a Static Site
+
+#### Option 3: Vercel Serverless Alternative (Advanced)
+
+Use Vercel with a serverless WebSocket alternative like:
+- **Pusher**: Managed WebSocket service
+- **Ably**: Real-time messaging platform
+- **Socket.io with Vercel**: Using serverless adapters
+
+Example with Pusher:
+
+```javascript
+// Install: npm install pusher-js pusher
+import Pusher from 'pusher';
+import PusherClient from 'pusher-js';
+
+// In Vercel serverless function
+export default async function handler(req, res) {
+  const pusher = new Pusher({
+    appId: process.env.PUSHER_APP_ID,
+    key: process.env.PUSHER_KEY,
+    secret: process.env.PUSHER_SECRET,
+  });
+  
+  await pusher.trigger('room', 'signal', req.body);
+  res.status(200).json({ success: true });
+}
+```
+
+### Production Checklist
+
+Before deploying to production:
+
+- [ ] Use WSS (WebSocket Secure) instead of WS
+- [ ] Use HTTPS for frontend
+- [ ] Add CORS configuration
+- [ ] Implement rate limiting
+- [ ] Add authentication
+- [ ] Use environment variables for URLs
+- [ ] Add error handling and logging
+- [ ] Monitor server health
+- [ ] Set up TURN server for better NAT traversal
+- [ ] Add reconnection logic
+
+### Environment Variables
+
+Create `.env` file for local development:
+
+```bash
+# Backend
+PORT=3001
+FRONTEND_URL=http://localhost:8080
+
+# Frontend (if using build tool)
+VITE_WS_URL=ws://localhost:3001
+```
+
+For production:
+```bash
+# Backend
+PORT=443
+FRONTEND_URL=https://your-app.vercel.app
+
+# Frontend
+VITE_WS_URL=wss://your-backend.railway.app
+```
+
 ## Browser Compatibility
 
 Works on modern browsers that support WebRTC:
@@ -157,4 +295,7 @@ MIT
 - [WebRTC API Documentation](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API)
 - [WebRTC Samples](https://webrtc.github.io/samples/)
 - [STUN/TURN Servers](https://www.metered.ca/tools/openrelay/)
+- [Railway Documentation](https://docs.railway.app/)
+- [Render Documentation](https://render.com/docs)
+- [Pusher Channels](https://pusher.com/channels)
 

@@ -1,16 +1,94 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Video Chat</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      h2 {
+        color: #333;
+        text-align: center;
+      }
+      .video-container {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      video {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+        background: #000;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      .status {
+        text-align: center;
+        margin: 20px 0;
+        padding: 10px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .status.connected {
+        color: #28a745;
+      }
+      .status.disconnected {
+        color: #dc3545;
+      }
+    </style>
+  </head>
   <body>
-    <h2>Simple Video Chat</h2>
-    <video id="local" autoplay playsinline muted></video>
-    <video id="remote" autoplay playsinline></video>
+    <h2>🎥 Simple Video Chat</h2>
+    <div class="status" id="status">Connecting...</div>
+    <div class="video-container">
+      <div>
+        <h3>You</h3>
+        <video id="local" autoplay playsinline muted></video>
+      </div>
+      <div>
+        <h3>Remote Peer</h3>
+        <video id="remote" autoplay playsinline></video>
+      </div>
+    </div>
     <script>
-      const ws = new WebSocket('ws://localhost:3001');
+      // Configuration - change this for production
+      const WS_URL = window.location.hostname === 'localhost' 
+        ? 'ws://localhost:3001'
+        : 'wss://your-backend.railway.app'; // Update this with your production WebSocket URL
+
+      const ws = new WebSocket(WS_URL);
       const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
       const localVideo = document.getElementById('local');
       const remoteVideo = document.getElementById('remote');
+      const statusEl = document.getElementById('status');
 
-      ws.onopen = () => ws.send(JSON.stringify({ type: 'join', room: 'demo' }));
+      // Update status display
+      function updateStatus(message, connected = false) {
+        statusEl.textContent = message;
+        statusEl.className = connected ? 'status connected' : 'status disconnected';
+      }
+
+      ws.onopen = () => {
+        updateStatus('✅ Connected to signaling server', true);
+        ws.send(JSON.stringify({ type: 'join', room: 'demo' }));
+      };
+
+      ws.onerror = () => {
+        updateStatus('❌ Failed to connect to signaling server');
+      };
+
+      ws.onclose = () => {
+        updateStatus('⚠️ Disconnected from signaling server');
+      };
 
       ws.onmessage = async (msg) => {
         const data = JSON.parse(msg.data);
@@ -34,16 +112,31 @@
           ws.send(JSON.stringify({ type: 'signal', payload: { candidate: e.candidate } }));
       };
 
-      pc.ontrack = (e) => (remoteVideo.srcObject = e.streams[0]);
+      pc.ontrack = (e) => {
+        remoteVideo.srcObject = e.streams[0];
+        updateStatus('🎉 Connected to peer!', true);
+      };
 
-      navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-        localVideo.srcObject = stream;
-        stream.getTracks().forEach((t) => pc.addTrack(t, stream));
-        pc.createOffer().then(async (offer) => {
-          await pc.setLocalDescription(offer);
-          ws.send(JSON.stringify({ type: 'signal', payload: { sdp: offer } }));
+      pc.onconnectionstatechange = () => {
+        console.log('Connection state:', pc.connectionState);
+        if (pc.connectionState === 'disconnected') {
+          updateStatus('⚠️ Peer disconnected');
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+          localVideo.srcObject = stream;
+          stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+          pc.createOffer().then(async (offer) => {
+            await pc.setLocalDescription(offer);
+            ws.send(JSON.stringify({ type: 'signal', payload: { sdp: offer } }));
+          });
+        })
+        .catch((err) => {
+          updateStatus('❌ Failed to access camera/microphone: ' + err.message);
+          console.error('Media error:', err);
         });
-      });
     </script>
   </body>
 </html>

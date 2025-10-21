@@ -1,9 +1,15 @@
 import { WebSocketServer } from 'ws';
 
-const wss = new WebSocketServer({ port: 3001 });
+const PORT = process.env.PORT || 3001;
+const wss = new WebSocketServer({ port: PORT });
 const rooms = {};
 
+console.log(`🚀 WebSocket server is running on port ${PORT}`);
+console.log(`📡 Ready to accept connections...`);
+
 wss.on('connection', (ws) => {
+  console.log('✅ New client connected');
+
   ws.on('message', (msg) => {
     const data = JSON.parse(msg);
     const { type, room, payload } = data;
@@ -12,7 +18,7 @@ wss.on('connection', (ws) => {
       rooms[room] = rooms[room] || [];
       rooms[room].push(ws);
       ws.room = room;
-      console.log(`user joined room: ${room}`);
+      console.log(`👤 User joined room: ${room} (${rooms[room].length} users in room)`);
     }
 
     if (type === 'signal') {
@@ -23,6 +29,13 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    rooms[ws.room] = rooms[ws.room]?.filter((c) => c !== ws);
+    if (ws.room) {
+      rooms[ws.room] = rooms[ws.room]?.filter((c) => c !== ws);
+      console.log(`👋 User left room: ${ws.room} (${rooms[ws.room]?.length || 0} users remaining)`);
+    }
+  });
+
+  ws.on('error', (error) => {
+    console.error('❌ WebSocket error:', error);
   });
 });

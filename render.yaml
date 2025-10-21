@@ -1,0 +1,25 @@
+services:
+  # Backend WebSocket Server
+  - type: web
+    name: poc-webrtc-backend
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend && pnpm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+    
+  # Frontend Static Site (optional - can use Vercel instead)
+  - type: static
+    name: poc-webrtc-frontend
+    buildCommand: echo "No build needed"
+    staticPublishPath: ./frontend
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
