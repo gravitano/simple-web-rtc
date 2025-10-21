@@ -45,8 +45,12 @@ cd poc-web-rtc
 2. Install backend dependencies:
 ```bash
 cd backend
-pnpm install
+npm install
+# or if you prefer pnpm:
+# pnpm install
 ```
+
+> **Note:** Project ini compatible dengan npm, pnpm, atau yarn. Railway dan Render akan auto-detect dan menggunakan npm secara default.
 
 ## Usage
 
@@ -177,17 +181,15 @@ vercel --prod
 
 **Backend on Railway:**
 
+> 📘 **Panduan lengkap Railway + troubleshooting: [RAILWAY_SETUP.md](./RAILWAY_SETUP.md)**
+
 1. Create a Railway account at [railway.app](https://railway.app)
 2. Click "New Project" → "Deploy from GitHub repo"
 3. Select your repository
-4. Set root directory to `backend`
-5. Railway will auto-detect Node.js and deploy
-6. Add environment variable `PORT` with Railway's provided port
-7. Update `server.js` to use environment port:
-```javascript
-const port = process.env.PORT || 3001;
-const wss = new WebSocketServer({ port });
-```
+4. **Important:** Go to Settings → Set **Root Directory** = `backend`
+5. Railway will auto-detect Node.js and deploy with npm
+6. Go to Settings → Networking → Click "Generate Domain"
+7. Copy the generated WebSocket URL (e.g., `wss://your-app.up.railway.app`)
 
 **Backend on Render:**
 

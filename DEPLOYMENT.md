@@ -6,6 +6,8 @@ Panduan lengkap untuk deploy aplikasi WebRTC ke production.
 
 ### 1. Deploy Backend ke Railway
 
+> 📘 **Untuk panduan Railway lengkap dengan troubleshooting, lihat [RAILWAY_SETUP.md](./RAILWAY_SETUP.md)**
+
 **Langkah 1: Persiapan**
 ```bash
 # Pastikan kode sudah di-push ke GitHub
@@ -19,16 +21,19 @@ git push origin main
 1. Buka [railway.app](https://railway.app) dan login dengan GitHub
 2. Klik **"New Project"** → **"Deploy from GitHub repo"**
 3. Pilih repository `poc-web-rtc`
-4. Railway akan otomatis mendeteksi Node.js dan deploy
-5. Setelah deploy selesai, klik **"Settings"** → **"Generate Domain"**
-6. Copy domain yang diberikan (contoh: `poc-webrtc-backend.railway.app`)
+4. **PENTING:** Klik service → **Settings** → Set **Root Directory** = `backend`
+5. Railway akan otomatis detect Node.js dan install dependencies dengan npm
+6. Tunggu sampai build & deploy selesai (check di tab "Deployments")
+7. Klik **"Settings"** → **"Networking"** → **"Generate Domain"**
+8. Copy domain yang digenerate (contoh: `poc-webrtc-production.up.railway.app`)
 
-**Langkah 3: Set Environment Variables** (Optional)
+**Langkah 3: Verify Deployment**
 
-Di Railway dashboard:
-- Klik tab **"Variables"**
-- Tidak perlu set `PORT` karena Railway otomatis provide
-- Tambahkan variable lain jika diperlukan
+Check logs di tab "Deployments", pastikan muncul:
+```
+🚀 WebSocket server is running on port XXXX
+📡 Ready to accept connections...
+```
 
 ### 2. Deploy Frontend ke Vercel
 
