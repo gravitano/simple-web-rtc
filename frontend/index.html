@@ -63,7 +63,7 @@
       // Configuration - change this for production
       const WS_URL = window.location.hostname === 'localhost' 
         ? 'ws://localhost:3001'
-        : 'wss://your-backend.railway.app'; // Update this with your production WebSocket URL
+        : 'wss://poc-webrtc-backend-production-81f3.up.railway.app'; // Update this with your production WebSocket URL
 
       const ws = new WebSocket(WS_URL);
       const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
