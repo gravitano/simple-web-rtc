@@ -5,8 +5,8 @@ services:
     env: node
     region: singapore
     plan: free
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && node server.js
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: PORT
         value: 10000

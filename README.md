@@ -186,10 +186,11 @@ vercel --prod
 1. Create a Railway account at [railway.app](https://railway.app)
 2. Click "New Project" → "Deploy from GitHub repo"
 3. Select your repository
-4. **Important:** Go to Settings → Set **Root Directory** = `backend`
-5. Railway will auto-detect Node.js and deploy with npm
-6. Go to Settings → Networking → Click "Generate Domain"
-7. Copy the generated WebSocket URL (e.g., `wss://your-app.up.railway.app`)
+4. Click "Deploy Now" and let Railway auto-detect everything
+5. **Important:** Do NOT set Root Directory - leave it default/empty
+6. Railway will auto-detect and run `npm start` from root package.json
+7. Go to Settings → Networking → Click "Generate Domain"
+8. Copy the generated WebSocket URL (e.g., `wss://your-app.up.railway.app`)
 
 **Backend on Render:**
 

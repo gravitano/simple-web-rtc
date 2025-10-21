@@ -1,0 +1,14 @@
+{
+	"name": "poc-web-rtc",
+	"version": "1.0.0",
+	"description": "WebRTC Video Chat POC",
+	"scripts": {
+		"install:backend": "cd backend && npm install",
+		"start": "cd backend && npm start",
+		"dev": "cd backend && npm run dev"
+	},
+	"keywords": ["webrtc", "websocket", "video-chat"],
+	"author": "",
+	"license": "MIT"
+}
+
